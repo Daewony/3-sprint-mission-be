@@ -8,4 +8,5 @@ model Product_tag {
   product    Product  @relation(fields: [product_id], references: [id])
 
   @@unique([product_id, tag_id]) // 중복 방지
+  @@map("product_tags")
 }
