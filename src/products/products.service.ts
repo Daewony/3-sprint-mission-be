@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import {
+  ConflictException,
   Injectable,
   NotFoundException,
   UnauthorizedException,
@@ -31,6 +32,7 @@ export interface AllProductsResponse {
 export class ProductsService {
   constructor(private prisma: PrismaService) {}
 
+  // 상품 등록
   async createProduct(createProductDto: CreateProductDto, ownerId: string) {
     const { images, tags, price, description, name } = createProductDto;
 
@@ -84,6 +86,7 @@ export class ProductsService {
     };
   }
 
+  // 상품 목록 조회
   async getAllProducts(
     page: number,
     pageSize: number,
@@ -154,6 +157,7 @@ export class ProductsService {
     return { totalCount, list };
   }
 
+  // 상품 상세 조회
   async getProduct(productId: string, userId: string | null) {
     // 상품 상세 정보 조회
 
@@ -204,6 +208,7 @@ export class ProductsService {
     };
   }
 
+  // 상품 정보 수정
   async updateProduct(
     updateProductDto: CreateProductDto,
     productId: string,
@@ -302,6 +307,7 @@ export class ProductsService {
     };
   }
 
+  // 상품 삭제
   async deleteProduct(productId: string, ownerId: string) {
     // 상품 조회
     const product = await this.prisma.product.findUnique({
@@ -326,8 +332,22 @@ export class ProductsService {
     return { message: '상품이 삭제되었습니다.' };
   }
 
+  // 좋아요 추가
   async addFavorite(productId: string, userId: string) {
-    // 좋아요 추가
+    // 이미 좋아요를 추가했는지 확인
+    const existingLike = await this.prisma.like.findUnique({
+      where: {
+        userId_productId: {
+          userId,
+          productId,
+        },
+      },
+    });
+
+    if (existingLike) {
+      throw new ConflictException('이미 좋아요를 추가한 상태입니다.');
+    }
+
     await this.prisma.like.create({
       data: {
         productId,
