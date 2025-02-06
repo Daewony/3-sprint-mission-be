@@ -1,16 +1,16 @@
 model Product {
   id String @id @default(cuid()) // PK
-  seller_id String // FK
+  ownerId String // FK
   name String // 상품명
   description String // 상품 설명
   price Int // 가격
-  image_url String // 상품 이미지
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
-  User User @relation(fields: [seller_id], references: [id]) // 1:N, 하나의 유저는 여러개의 상품을 가질 수 있다.
-  likes       Like[]// 1:N, 하나의 상품은 여러개의 좋아요를 가질 수 있다.
-  comments    Comment[] // 1:N, 하나의 상품은 여러개의 댓글을 가질 수 있다.
-  product_tags Product_tag[] // N:M, 하나의 상품은 여러개의 태그를 가질 수 있고, 하나의 태그는 여러개의 상품을 가질 수 있다.
+  imageUrl String // 상품 이미지
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  owner User @relation(fields: [ownerId], references: [id]) // 1:N, 하나의 유저는 여러개의 상품을 가질 수 있다.
+  likes Like[] // 1:N, 하나의 상품은 여러개의 좋아요를 가질 수 있다.
+  comments Comment[] // 1:N, 하나의 상품은 여러개의 댓글을 가질 수 있다.
+  productTags ProductTag[] // N:M, 하나의 상품은 여러개의 태그를 가질 수 있고, 하나의 태그는 여러개의 상품을 가질 수 있다.
 
   @@map("products")
 }

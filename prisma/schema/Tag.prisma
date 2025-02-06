@@ -1,10 +1,9 @@
-
 model Tag {
-  id            String        @id @default(cuid())
-  name          String        @unique
-  created_at    DateTime      @default(now())
-  updated_at    DateTime      @updatedAt
-  products_tags Product_tag[]
+  id           String       @id @default(cuid())
+  name         String       @unique
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  productTags  ProductTag[]
 
   @@map("tags")
 }
