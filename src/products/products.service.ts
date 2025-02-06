@@ -325,4 +325,16 @@ export class ProductsService {
 
     return { message: '상품이 삭제되었습니다.' };
   }
+
+  async addFavorite(productId: string, userId: string) {
+    // 좋아요 추가
+    await this.prisma.like.create({
+      data: {
+        productId,
+        userId,
+      },
+    });
+
+    return { message: '상품에 좋아요를 추가했습니다.' };
+  }
 }
