@@ -12,7 +12,6 @@ async function bootstrap() {
   const customOption: SwaggerCustomOptions = docsOptions.swaggerCustom();
   const swaggerOptions: Omit<OpenAPIObject, 'paths'> = docsOptions.swagger();
 
-  // Swagger 문서 생성 시 태그 순서를 명시적으로 설정
   const document = SwaggerModule.createDocument(app, swaggerOptions);
   SwaggerModule.setup('api', app, document, customOption);
 
