@@ -301,4 +301,28 @@ export class ProductsService {
       id: updatedProduct.id,
     };
   }
+
+  async deleteProduct(productId: string, ownerId: string) {
+    // 상품 조회
+    const product = await this.prisma.product.findUnique({
+      where: { id: productId },
+    });
+
+    // 상품이 없을 경우 에러 발생
+    if (!product) {
+      throw new NotFoundException('상품을 찾을 수 없습니다.');
+    }
+
+    // 상품 소유자와 로그인한 사용자가 다를 경우 에러 발생
+    if (product.ownerId !== ownerId) {
+      throw new UnauthorizedException('상품을 삭제할 권한이 없습니다.');
+    }
+
+    // 상품 삭제
+    await this.prisma.product.delete({
+      where: { id: productId },
+    });
+
+    return { message: '상품이 삭제되었습니다.' };
+  }
 }

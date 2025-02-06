@@ -95,6 +95,7 @@ export class ProductsController {
     return this.productsService.getProduct(productId, userId);
   }
 
+  // 상품 정보 수정
   @Patch(':productId')
   @UseGuards(PassportJwtAuthGuard)
   @ApiOperation({ summary: '상품 정보 수정' })
@@ -104,7 +105,6 @@ export class ProductsController {
     @Request() request: { user?: { userId: string } },
     @Body() updateProductDto: CreateProductDto,
   ) {
-    // return `상품 ${productId} 수정 완료`;
     if (!request.user) {
       throw new UnauthorizedException('로그인이 필요합니다.');
     }
@@ -116,24 +116,35 @@ export class ProductsController {
     );
   }
 
+  // 상품 삭제
   @Delete(':productId')
+  @UseGuards(PassportJwtAuthGuard)
   @ApiOperation({ summary: '상품 삭제' })
   @ApiParam({ name: 'productId', required: true, description: '상품 ID' })
-  deleteProduct(@Param('productId') productId: string) {
-    return `상품 ${productId} 삭제 완료`;
+  deleteProduct(
+    @Param('productId') productId: string,
+    @Request() request: { user?: { userId: string } },
+  ) {
+    if (!request.user) {
+      throw new UnauthorizedException('로그인이 필요합니다.');
+    }
+    const ownerId = request.user.userId;
+    return this.productsService.deleteProduct(productId, ownerId);
   }
 
+  // 상품 좋아요
   @Post(':productId/favorite')
-  @ApiOperation({ summary: '상품 즐겨찾기 추가' })
+  @ApiOperation({ summary: '상품 좋아요' })
   @ApiParam({ name: 'productId', required: true, description: '상품 ID' })
   addFavorite(@Param('productId') productId: string) {
-    return `상품 ${productId} 즐겨찾기 추가`;
+    return `상품 ${productId} 좋아요`;
   }
 
+  // 상품 좋아요 취소
   @Delete(':productId/favorite')
-  @ApiOperation({ summary: '상품 즐겨찾기 제거' })
+  @ApiOperation({ summary: '상품 좋아요 취소' })
   @ApiParam({ name: 'productId', required: true, description: '상품 ID' })
   removeFavorite(@Param('productId') productId: string) {
-    return `상품 ${productId} 즐겨찾기 제거`;
+    return `상품 ${productId}  좋아요 취소`;
   }
 }
