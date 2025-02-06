@@ -10,26 +10,26 @@ import { UsersService } from 'src/users/users.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
 
-interface AuthInput {
-  email: string;
-  password: string;
-}
-interface SignInData {
-  userId: number;
-  username: string;
-}
-
 interface User {
   id: string;
   email: string;
   nickname: string;
-  image?: string;
+  profile_image: string | null;
+  created_at: Date;
+  updated_at: Date;
 }
 
 export interface AuthResult {
   accessToken: string;
   refreshToken: string;
-  user: User;
+  user: {
+    id: string;
+    email: string;
+    nickname: string;
+    image: string | null;
+    createdAt: Date;
+    updatedAt: Date;
+  };
 }
 
 @Injectable()
@@ -100,37 +100,30 @@ export class AuthService {
     };
   }
 
-  async authenticate(input: AuthInput): Promise<AuthResult> {
-    const user = await this.validateUser(input);
-
-    if (!user) {
-      throw new UnauthorizedException();
-    }
-
-    return this.signIn(user);
-  }
-
-  async validateUser(input: AuthInput): Promise<SignInData | null> {
-    const user = await this.userService.findUserByName(input.username);
-
-    if (user && user.password === input.password) {
-      return {
-        userId: user.userId,
-        username: user.username,
-      };
-    }
-
-    return null;
-  }
-
-  async signIn(user: SignInData): Promise<AuthResult> {
+  async signIn(user: User): Promise<AuthResult> {
     const tokenPayload = {
-      sub: user.userId,
-      username: user.username,
+      sub: user.id,
+      username: user.nickname,
     };
 
-    const accessToken = await this.jwtService.signAsync(tokenPayload);
+    const accessToken = await this.jwtService.signAsync(tokenPayload, {
+      expiresIn: '1h',
+    });
+    const refreshToken = await this.jwtService.signAsync(tokenPayload, {
+      expiresIn: '7d',
+    });
 
-    return { accessToken, userId: user.userId, username: user.username };
+    return {
+      accessToken,
+      refreshToken,
+      user: {
+        id: user.id,
+        email: user.email,
+        nickname: user.nickname,
+        image: user.profile_image,
+        createdAt: user.created_at,
+        updatedAt: user.updated_at,
+      },
+    };
   }
 }

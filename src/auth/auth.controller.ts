@@ -29,9 +29,9 @@ export class AuthController {
 
   @HttpCode(HttpStatus.OK)
   @Post('login')
-  @UseGuards(PassportLocalGuard)
-  login(@Body() input: { username: string; password: string }) {
-    return this.authService.authenticate(input);
+  @UseGuards(PassportLocalGuard) // 로그인 요청이 들어오면 PassportLocalGuard 가 실행됨 -> local.strategy.ts 검증 -> request.user 에 유저 정보가 담김
+  login(@Request() request) {
+    return this.authService.signIn(request.user);
   }
 
   // @UseGuards(AuthGuard)
