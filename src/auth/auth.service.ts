@@ -40,6 +40,7 @@ export class AuthService {
     private prisma: PrismaService,
   ) {}
 
+  // 회원가입
   async createUser(createAuthDto: CreateAuthDto) {
     // 이메일 중복이 없는지 확인
     const emailExists = await this.prisma.user.findUnique({
@@ -100,6 +101,7 @@ export class AuthService {
     };
   }
 
+  // 로그인
   async signIn(user: User): Promise<AuthResult> {
     const tokenPayload = {
       sub: user.id,
@@ -125,5 +127,31 @@ export class AuthService {
         updatedAt: user.updated_at,
       },
     };
+  }
+
+  // 리프레시 토큰을 받아서 새로운 액세스 토큰을 발급
+  async refreshAccessToken(refreshToken: string) {
+    try {
+      const payload = await this.jwtService.verifyAsync<{ sub: string }>(
+        refreshToken,
+      );
+
+      const user = await this.prisma.user.findUnique({
+        where: { id: payload.sub },
+      });
+
+      if (!user) {
+        throw new UnauthorizedException('User not found');
+      }
+
+      const newAccessToken = await this.jwtService.signAsync(
+        { sub: user.id, email: user.email, nickname: user.nickname },
+        { expiresIn: '1h' },
+      );
+
+      return { accessToken: newAccessToken };
+    } catch {
+      throw new UnauthorizedException('Invalid or expired refresh token');
+    }
   }
 }

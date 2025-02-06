@@ -11,6 +11,7 @@ import {
   HttpCode,
   UseGuards,
   Request,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { CreateAuthDto } from './dto/create-auth.dto';
@@ -34,12 +35,20 @@ export class AuthController {
     return this.authService.signIn(request.user);
   }
 
-  // @UseGuards(AuthGuard)
-  // @Get('me')
-  // getUserInfo(@Request() request) {
-  //   if (!request.user) {
-  //     throw new NotImplementedException();
-  //   }
-  //   return request.user;
-  // }
+  @HttpCode(HttpStatus.OK)
+  @Post('refresh-token')
+  refreshAccessToken(
+    @Request() request: { headers: { authorization?: string } },
+  ) {
+    const authorization = request.headers.authorization;
+    console.log('authorization', authorization);
+    const refreshToken: string = authorization
+      ? authorization.split(' ')[1]
+      : ''; // Bearer 제거
+    console.log('refreshToken', refreshToken);
+    if (!refreshToken) {
+      throw new UnauthorizedException('Refresh token is missing');
+    }
+    return this.authService.refreshAccessToken(refreshToken);
+  }
 }
