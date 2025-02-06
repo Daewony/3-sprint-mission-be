@@ -30,15 +30,7 @@ export class AuthController {
 
   @HttpCode(HttpStatus.OK)
   @Post('refresh-token')
-  refreshAccessToken(
-    @Request() request: { headers: { authorization?: string } },
-  ) {
-    const authorization = request.headers.authorization;
-    console.log('authorization', authorization);
-    const refreshToken: string = authorization
-      ? authorization.split(' ')[1]
-      : ''; // Bearer 제거
-    console.log('refreshToken', refreshToken);
+  refreshAccessToken(@Body('refreshToken') refreshToken: string) {
     if (!refreshToken) {
       throw new UnauthorizedException('Refresh token is missing');
     }
