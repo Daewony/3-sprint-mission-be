@@ -357,4 +357,29 @@ export class ProductsService {
 
     return { message: '상품에 좋아요를 추가했습니다.' };
   }
+
+  // 좋아요 취소
+  async removeFavorite(productId: string, userId: string) {
+    // 좋아요가 추가된 상태인지 확인
+    const existingLike = await this.prisma.like.findFirst({
+      where: {
+        userId: userId,
+        productId: productId,
+      },
+    });
+
+    if (!existingLike) {
+      throw new NotFoundException('좋아요가 추가되지 않은 상태입니다.');
+    }
+
+    // 좋아요 취소
+    await this.prisma.like.deleteMany({
+      where: {
+        productId,
+        userId,
+      },
+    });
+
+    return { message: '상품에 좋아요를 취소했습니다.' };
+  }
 }

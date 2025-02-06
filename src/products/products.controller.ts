@@ -150,9 +150,17 @@ export class ProductsController {
 
   // 상품 좋아요 취소
   @Delete(':productId/favorite')
+  @UseGuards(PassportJwtAuthGuard)
   @ApiOperation({ summary: '상품 좋아요 취소' })
   @ApiParam({ name: 'productId', required: true, description: '상품 ID' })
-  removeFavorite(@Param('productId') productId: string) {
-    return `상품 ${productId}  좋아요 취소`;
+  removeFavorite(
+    @Param('productId') productId: string,
+    @Request() request: { user?: { userId: string } },
+  ) {
+    if (!request.user) {
+      throw new UnauthorizedException('로그인이 필요합니다.');
+    }
+    const userId = request.user.userId;
+    return this.productsService.removeFavorite(productId, userId);
   }
 }
