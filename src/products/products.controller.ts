@@ -6,11 +6,10 @@ import {
   Patch,
   Param,
   Delete,
+  Query,
 } from '@nestjs/common';
-import { ProductsService } from './products.service';
-import { CreateProductDto } from './dto/create-product.dto';
-import { UpdateProductDto } from './dto/update-product.dto';
-import { ApiOperation, ApiParam } from '@nestjs/swagger';
+import { AllProductsResponse, ProductsService } from './products.service';
+import { ApiOperation, ApiParam, ApiQuery } from '@nestjs/swagger';
 
 @Controller('products')
 export class ProductsController {
@@ -18,8 +17,46 @@ export class ProductsController {
 
   @Get()
   @ApiOperation({ summary: '상품 목록 조회' })
-  getAllProducts() {
-    return '상품 목록';
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    type: Number,
+    description: '페이지 번호',
+    example: 1,
+  })
+  @ApiQuery({
+    name: 'pageSize',
+    required: false,
+    type: Number,
+    description: '페이지 당 상품 수',
+    example: 10,
+  })
+  @ApiQuery({
+    name: 'orderBy',
+    required: false,
+    type: String,
+    description: '정렬 기준',
+    enum: ['favorite', 'recent'],
+    example: 'recent',
+  })
+  @ApiQuery({
+    name: 'keyword',
+    required: false,
+    type: String,
+    description: '검색 키워드',
+  })
+  getAllProducts(
+    @Query('page') page: number = 1,
+    @Query('pageSize') pageSize: number = 10,
+    @Query('orderBy') orderBy: string = 'recent',
+    @Query('keyword') keyword: string = '',
+  ): Promise<AllProductsResponse> {
+    return this.productsService.getAllProducts(
+      page,
+      pageSize,
+      orderBy,
+      keyword,
+    );
   }
 
   @Get(':productId')
