@@ -5,7 +5,6 @@ import {
 } from '@nestjs/common';
 import { CreateAuthDto } from './dto/create-auth.dto';
 import { JwtService } from '@nestjs/jwt';
-import { UsersService } from 'src/users/users.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
 
@@ -13,9 +12,9 @@ interface User {
   id: string;
   email: string;
   nickname: string;
-  profile_image: string | null;
-  created_at: Date;
-  updated_at: Date;
+  profileImage: string | null;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface AuthResult {
@@ -34,7 +33,6 @@ export interface AuthResult {
 @Injectable()
 export class AuthService {
   constructor(
-    private userService: UsersService,
     private jwtService: JwtService,
     private prisma: PrismaService,
   ) {}
@@ -121,9 +119,9 @@ export class AuthService {
         id: user.id,
         email: user.email,
         nickname: user.nickname,
-        image: user.profile_image,
-        createdAt: user.created_at,
-        updatedAt: user.updated_at,
+        image: user.profileImage,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt,
       },
     };
   }
