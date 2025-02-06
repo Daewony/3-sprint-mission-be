@@ -16,6 +16,7 @@ import { AllProductsResponse, ProductsService } from './products.service';
 import { ApiOperation, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { PassportJwtAuthGuard } from 'src/auth/guards/passport-jwt.guard';
 import { CreateProductDto } from './dto/create-product.dto';
+import { OptionalAuthGuard } from 'src/auth/guards/passport-optinal-jwt.guard';
 
 @Controller('products')
 export class ProductsController {
@@ -79,11 +80,19 @@ export class ProductsController {
     );
   }
 
+  // 상품 상세 조회
+  // 로그인하지 않는 경우 좋아요 false 처리 + 조회가능
+  // 로그인한 경우 좋아요 여부 조회(유저 정보)
   @Get(':productId')
+  @UseGuards(OptionalAuthGuard)
   @ApiOperation({ summary: '상품 상세 조회' })
   @ApiParam({ name: 'productId', required: true, description: '상품 ID' })
-  getProduct(@Param('productId') productId: string) {
-    return `상품 ${productId}`;
+  async getProduct(
+    @Param('productId') productId: string,
+    @Request() request: { user?: { userId: string } },
+  ) {
+    const userId = request.user ? request.user.userId : null; // 로그인하지 않는 경우 좋아요 false 처리
+    return this.productsService.getProduct(productId, userId);
   }
 
   @Patch(':productId')

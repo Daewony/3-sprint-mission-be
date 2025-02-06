@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Prisma } from '@prisma/client';
 import { CreateProductDto } from './dto/create-product.dto';
@@ -148,5 +148,55 @@ export class ProductsService {
     }));
 
     return { totalCount, list };
+  }
+
+  async getProduct(productId: string, userId: string | null) {
+    // 상품 상세 정보 조회
+
+    const product = await this.prisma.product.findUnique({
+      where: { id: productId },
+      include: {
+        owner: {
+          select: {
+            nickname: true,
+          },
+        },
+        images: true,
+        productTags: {
+          include: {
+            tag: true,
+          },
+        },
+        // 해당 상품을 좋아요한 사용자 목록 조회
+        // 유저가 로그인하지 않은 경우 좋아요 정보를 조회하지 않음
+        likes: userId
+          ? {
+              where: { userId: userId },
+            }
+          : false,
+      },
+    });
+
+    // 상품이 없을 경우 에러를 발생시킴
+    if (!product) {
+      throw new NotFoundException('상품을 찾을 수 없습니다.');
+    }
+
+    // 해당 유저가 해당 상품을 좋아요 했는지 확인
+    const isLiked = userId ? product.likes.length > 0 : false;
+
+    return {
+      createdAt: product.createdAt,
+      favoriteCount: product.favoriteCount,
+      ownerNickname: product.owner.nickname,
+      ownerId: product.ownerId,
+      images: product.images.map((image) => image.url),
+      tags: product.productTags.map((productTag) => productTag.tag.name),
+      price: product.price,
+      description: product.description,
+      name: product.name,
+      id: product.id,
+      isFavorite: isLiked, // 해당 유저 정보 필요하네
+    };
   }
 }
