@@ -7,13 +7,33 @@ import {
   Param,
   Delete,
   Query,
+  Req,
+  Request,
+  UseGuards,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { AllProductsResponse, ProductsService } from './products.service';
 import { ApiOperation, ApiParam, ApiQuery } from '@nestjs/swagger';
+import { PassportJwtAuthGuard } from 'src/auth/guards/passport-jwt.guard';
+import { CreateProductDto } from './dto/create-product.dto';
 
 @Controller('products')
 export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
+
+  @Post()
+  @UseGuards(PassportJwtAuthGuard)
+  @ApiOperation({ summary: '상품 등록' })
+  createProduct(
+    @Body() createProductDto: CreateProductDto,
+    @Request() request: { user?: { userId: string } },
+  ) {
+    if (!request.user) {
+      throw new UnauthorizedException('로그인이 필요합니다.');
+    }
+    const ownerId = request.user.userId;
+    return this.productsService.createProduct(createProductDto, ownerId);
+  }
 
   @Get()
   @ApiOperation({ summary: '상품 목록 조회' })
@@ -64,12 +84,6 @@ export class ProductsController {
   @ApiParam({ name: 'productId', required: true, description: '상품 ID' })
   getProduct(@Param('productId') productId: string) {
     return `상품 ${productId}`;
-  }
-
-  @Post()
-  @ApiOperation({ summary: '상품 등록' })
-  createProduct() {
-    return '상품 등록 완료';
   }
 
   @Patch(':productId')

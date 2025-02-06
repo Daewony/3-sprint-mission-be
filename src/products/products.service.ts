@@ -3,6 +3,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Prisma } from '@prisma/client';
+import { CreateProductDto } from './dto/create-product.dto';
 
 export interface ProductResponse {
   createdAt: Date;
@@ -25,6 +26,60 @@ export interface AllProductsResponse {
 @Injectable()
 export class ProductsService {
   constructor(private prisma: PrismaService) {}
+
+  async createProduct(createProductDto: CreateProductDto, ownerId: string) {
+    const { images, tags, price, description, name } = createProductDto;
+
+    // 상품 등록
+    const product = await this.prisma.product.create({
+      data: {
+        ownerId,
+        name,
+        description,
+        price,
+        images: {
+          create: images.map((url) => ({ url })),
+        },
+        productTags: {
+          create: tags.map((tagName) => ({
+            tag: {
+              connectOrCreate: {
+                where: { name: tagName },
+                create: { name: tagName },
+              },
+            },
+          })),
+        },
+      },
+      include: {
+        owner: {
+          select: {
+            nickname: true,
+          },
+        },
+        images: true,
+        productTags: {
+          include: {
+            tag: true,
+          },
+        },
+      },
+    });
+
+    return {
+      createdAt: product.createdAt,
+      favoriteCount: product.favoriteCount,
+      ownerNickname: product.owner.nickname,
+      ownerId: product.ownerId,
+      images: product.images.map((image) => image.url),
+      tags: product.productTags.map((productTag) => productTag.tag.name),
+      price: product.price,
+      description: product.description,
+      name: product.name,
+      id: product.id,
+    };
+  }
+
   async getAllProducts(
     page: number,
     pageSize: number,
