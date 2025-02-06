@@ -87,7 +87,7 @@ export class ProductsController {
   @UseGuards(OptionalAuthGuard)
   @ApiOperation({ summary: '상품 상세 조회' })
   @ApiParam({ name: 'productId', required: true, description: '상품 ID' })
-  async getProduct(
+  getProduct(
     @Param('productId') productId: string,
     @Request() request: { user?: { userId: string } },
   ) {
@@ -96,10 +96,24 @@ export class ProductsController {
   }
 
   @Patch(':productId')
+  @UseGuards(PassportJwtAuthGuard)
   @ApiOperation({ summary: '상품 정보 수정' })
   @ApiParam({ name: 'productId', required: true, description: '상품 ID' })
-  updateProduct(@Param('productId') productId: string) {
-    return `상품 ${productId} 수정 완료`;
+  updateProduct(
+    @Param('productId') productId: string,
+    @Request() request: { user?: { userId: string } },
+    @Body() updateProductDto: CreateProductDto,
+  ) {
+    // return `상품 ${productId} 수정 완료`;
+    if (!request.user) {
+      throw new UnauthorizedException('로그인이 필요합니다.');
+    }
+    const ownerId = request.user.userId;
+    return this.productsService.updateProduct(
+      updateProductDto,
+      productId,
+      ownerId,
+    );
   }
 
   @Delete(':productId')
