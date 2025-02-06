@@ -1,13 +1,8 @@
 import {
   Controller,
-  Get,
   Post,
   Body,
-  Patch,
-  Param,
-  Delete,
   HttpStatus,
-  NotImplementedException,
   HttpCode,
   UseGuards,
   Request,
@@ -15,8 +10,6 @@ import {
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { CreateAuthDto } from './dto/create-auth.dto';
-import { UpdateAuthDto } from './dto/update-auth.dto';
-import { AuthGuard } from './guards/auth.guard';
 import { PassportLocalGuard } from './guards/passport-local.guard';
 
 @Controller('auth')
