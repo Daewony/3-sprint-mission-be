@@ -4,6 +4,7 @@ model Product {
   name String // 상품명
   description String // 상품 설명
   price Int // 가격
+  favoriteCount Int  @default(0) // 좋아요 수
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   owner User @relation(fields: [ownerId], references: [id]) // 1:N, 하나의 유저는 여러개의 상품을 가질 수 있다.
