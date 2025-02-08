@@ -64,4 +64,17 @@ export class PostsController {
     const writer = request.user.userId;
     return this.postsService.updatePost(updatePostDto, postId, writer);
   }
+
+  @Delete(':postId')
+  @UseGuards(PassportJwtAuthGuard)
+  @ApiOperation({ summary: '게시글 삭제' })
+  @ApiParam({ name: 'postId', required: true, description: '게시글 ID' })
+  deletePost(
+    @Param('postId') postId: string,
+    @Request() request: { user?: { userId: string } },
+  ) {
+    if (!request.user) throw new UnauthorizedException('로그인이 필요합니다.');
+    const ownerId = request.user.userId;
+    return this.postsService.deletePost(postId, ownerId);
+  }
 }

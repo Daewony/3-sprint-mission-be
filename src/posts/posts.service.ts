@@ -111,11 +111,11 @@ export class PostsService {
   async updatePost(
     updatePostDto: UpdatePostDto,
     postId: string,
-    writer: string,
+    ownerId: string,
   ) {
     // 게시글 작성자가 아닌 경우 예외 처리
     const post = await this.prisma.post.findFirst({
-      where: { id: postId, writer: { id: writer } },
+      where: { id: postId, writer: { id: ownerId } },
     });
     if (!post)
       throw new UnauthorizedException('게시글 작성자만 수정할 수 있습니다.');
@@ -142,5 +142,21 @@ export class PostsService {
     });
 
     return updatedPost;
+  }
+
+  // 게시글 삭제
+  async deletePost(postId: string, ownerId: string) {
+    // 게시글 작성자가 아닌 경우 예외 처리
+    const post = await this.prisma.post.findFirst({
+      where: { id: postId, writer: { id: ownerId } },
+    });
+    if (!post)
+      throw new UnauthorizedException('게시글 작성자만 삭제할 수 있습니다.');
+
+    // 게시글 삭제
+    await this.prisma.post.delete({ where: { id: postId } });
+
+    // 삭제 성공 메시지 반환
+    return { message: '게시글이 삭제되었습니다.' };
   }
 }
