@@ -77,4 +77,30 @@ export class PostsController {
     const ownerId = request.user.userId;
     return this.postsService.deletePost(postId, ownerId);
   }
+
+  @Post(':postId/like')
+  @UseGuards(PassportJwtAuthGuard)
+  @ApiOperation({ summary: '게시글 좋아요' })
+  @ApiParam({ name: 'postId', required: true, description: '게시글 ID' })
+  addLike(
+    @Param('postId') postId: string,
+    @Request() request: { user?: { userId: string } },
+  ) {
+    if (!request.user) throw new UnauthorizedException('로그인이 필요합니다.');
+    const userId = request.user.userId;
+    return this.postsService.addLike(postId, userId);
+  }
+
+  @Delete(':postId/like')
+  @UseGuards(PassportJwtAuthGuard)
+  @ApiOperation({ summary: '게시글 좋아요 취소' })
+  @ApiParam({ name: 'postId', required: true, description: '게시글 ID' })
+  removeLike(
+    @Param('postId') postId: string,
+    @Request() request: { user?: { userId: string } },
+  ) {
+    if (!request.user) throw new UnauthorizedException('로그인이 필요합니다.');
+    const userId = request.user.userId;
+    return this.postsService.removeLike(postId, userId);
+  }
 }

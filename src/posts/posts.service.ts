@@ -81,7 +81,7 @@ export class PostsService {
         },
         // 해당 게시글을 좋아요한 사용자 목록 조회
         // 유저가 로그인하지 않은 경우 좋아요 정보를 조회하지 않음
-        likes: userId ? { where: { id: userId } } : false,
+        likes: userId ? { where: { userId } } : false,
       },
     });
 
@@ -158,5 +158,58 @@ export class PostsService {
 
     // 삭제 성공 메시지 반환
     return { message: '게시글이 삭제되었습니다.' };
+  }
+
+  // 게시글 좋아요
+  async addLike(postId: string, userId: string) {
+    // 이미 좋아요를 누른 경우 예외 처리
+    const like = await this.prisma.like.findFirst({
+      where: { postId, userId },
+    });
+    if (like) throw new ConflictException('이미 좋아요를 눌렀습니다.');
+
+    // 좋아요 추가
+    await this.prisma.like.create({
+      data: {
+        post: { connect: { id: postId } },
+        user: { connect: { id: userId } },
+      },
+    });
+
+    // 좋아요 수 증가
+    await this.prisma.post.update({
+      where: { id: postId },
+      data: {
+        favoriteCount: {
+          increment: 1,
+        },
+      },
+    });
+
+    return { message: '게시글을 좋아요했습니다.' };
+  }
+
+  // 게시글 좋아요 취소
+  async removeLike(postId: string, userId: string) {
+    // 좋아요를 누르지 않은 경우 예외 처리
+    const like = await this.prisma.like.findFirst({
+      where: { postId, userId },
+    });
+    if (!like) throw new NotFoundException('좋아요를 누르지 않았습니다.');
+
+    // 좋아요 삭제
+    await this.prisma.like.delete({ where: { id: like.id } });
+
+    // 좋아요 수 감소
+    await this.prisma.post.update({
+      where: { id: postId },
+      data: {
+        favoriteCount: {
+          decrement: 1,
+        },
+      },
+    });
+
+    return { message: '게시글 좋아요를 취소했습니다.' };
   }
 }
