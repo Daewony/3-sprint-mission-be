@@ -37,4 +37,26 @@ export class PostsService {
     });
     return post;
   }
+
+  // 모든 게시글 조회
+  async getAllPosts() {
+    const posts = await this.prisma.post.findMany({
+      select: {
+        id: true,
+        title: true,
+        content: true,
+        image: true,
+        favoriteCount: true,
+        createdAt: true,
+        updatedAt: true,
+        writer: {
+          select: {
+            id: true,
+            nickname: true,
+          },
+        },
+      },
+    });
+    return posts;
+  }
 }

@@ -30,4 +30,10 @@ export class PostsController {
     const ownerId = request.user.userId;
     return this.postsService.createPost(createPostDto, ownerId);
   }
+
+  @Get()
+  @ApiOperation({ summary: '게시글 목록 조회' })
+  getAllPosts() {
+    return this.postsService.getAllPosts();
+  }
 }
