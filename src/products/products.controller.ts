@@ -16,7 +16,7 @@ import { AllProductsResponse, ProductsService } from './products.service';
 import { ApiOperation, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { PassportJwtAuthGuard } from 'src/auth/guards/passport-jwt.guard';
 import { CreateProductDto } from './dto/create-product.dto';
-import { OptionalAuthGuard } from 'src/auth/guards/passport-optinal-jwt.guard';
+import { OptionalAuthGuard } from 'src/auth/guards/passport-optional-jwt.guard';
 
 @Controller('products')
 export class ProductsController {

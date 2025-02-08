@@ -14,6 +14,7 @@ import { ApiOperation, ApiParam } from '@nestjs/swagger';
 import { PassportJwtAuthGuard } from 'src/auth/guards/passport-jwt.guard';
 import { CreatePostDto } from './dto/create-post.dto';
 import { PostsService } from './posts.service';
+import { OptionalAuthGuard } from 'src/auth/guards/passport-optional-jwt.guard';
 
 @Controller('posts')
 export class PostsController {
@@ -35,5 +36,17 @@ export class PostsController {
   @ApiOperation({ summary: '게시글 목록 조회' })
   getAllPosts() {
     return this.postsService.getAllPosts();
+  }
+
+  @Get(':postId')
+  @UseGuards(OptionalAuthGuard)
+  @ApiOperation({ summary: '게시글 상세 조회' })
+  @ApiParam({ name: 'postId', required: true, description: '게시글 ID' })
+  getPost(
+    @Param('postId') postId: string,
+    @Request() request: { user?: { userId: string } },
+  ) {
+    const userId = request.user ? request.user.userId : null; // 로그인하지 않는 경우 좋아요 false 처리
+    return this.postsService.getPost(postId, userId);
   }
 }
