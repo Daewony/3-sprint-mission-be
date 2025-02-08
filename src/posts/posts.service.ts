@@ -106,4 +106,41 @@ export class PostsService {
       isFavorite: isLiked,
     };
   }
+
+  // 게시글 수정
+  async updatePost(
+    updatePostDto: UpdatePostDto,
+    postId: string,
+    writer: string,
+  ) {
+    // 게시글 작성자가 아닌 경우 예외 처리
+    const post = await this.prisma.post.findFirst({
+      where: { id: postId, writer: { id: writer } },
+    });
+    if (!post)
+      throw new UnauthorizedException('게시글 작성자만 수정할 수 있습니다.');
+
+    // 게시글 수정
+    const updatedPost = await this.prisma.post.update({
+      where: { id: postId },
+      data: updatePostDto,
+      select: {
+        id: true,
+        title: true,
+        content: true,
+        image: true,
+        favoriteCount: true,
+        createdAt: true,
+        updatedAt: true,
+        writer: {
+          select: {
+            id: true,
+            nickname: true,
+          },
+        },
+      },
+    });
+
+    return updatedPost;
+  }
 }
